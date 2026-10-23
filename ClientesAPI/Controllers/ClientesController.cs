@@ -1,11 +1,13 @@
 ﻿using ClientesAPI.Data;
 using ClientesAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 
 namespace ClientesAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientesController : ControllerBase
