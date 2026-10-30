@@ -7,7 +7,7 @@ using Microsoft.Identity.Client;
 
 namespace ClientesAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientesController : ControllerBase
@@ -26,10 +26,29 @@ namespace ClientesAPI.Controllers
         //IEnumerable   : Define un set de datos (colección <Tipo>) 
         //ActionResult  : Valor a obtener (colección definida en el modelo)
         [HttpGet]
-        public async Task <ActionResult<IEnumerable<Cliente>>> Listar()
+        public async Task <ActionResult<IEnumerable<Cliente>>> Listar([FromQuery] string? buscar)
         {
+            //Algoritmo básico para listar TODO sin filtro
             var Cliente = await _context.Clientes.AsNoTracking().ToListAsync();
             return Ok(Cliente);
+            //Algoritmo que permite listar todo o aplicar filtro
+            var consulta = _context.Clientes.AsNoTracking();
+
+            if(!string.IsNullOrWhiteSpace(buscar))
+            {
+                var texto = buscar.Trim();
+                consulta = consulta.Where(c =>
+                    c.Apellidos.Contains(texto) ||
+                    c.Nombres.Contains(texto) ||
+                    c.Dni.Contains(texto)
+                    );
+            }
+            var lista = await consulta
+                .OrderBy(c => c.Apellidos)
+                .ThenBy(c => c.Nombres)
+                .Take(200)
+                .ToListAsync();
+            return Ok(lista);
         }
 
         [HttpGet("{id:int}")]
@@ -116,6 +135,7 @@ namespace ClientesAPI.Controllers
         }
 
         //DELETE
+        //[Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Eliminar (int id)
         {
